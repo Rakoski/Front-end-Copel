@@ -1,3 +1,52 @@
+function RegistrarEndereco() {
+  let endereco = {}
+
+  endereco.cep = $("#cep").val();
+  endereco.numero = $("#numero").val();
+
+   $.ajax({
+     type: "POST",
+     url: "http://localhost:8080/api/endereco/registrar",
+     data: JSON.stringify(endereco),
+     contentType: "application/json; charset=utf-8",
+     dataType: "json",
+     success: function (msg) {
+         alert('Sucesso!');
+     },
+     error: function (msg) {
+      alert("algo deu errado no registro!")
+     }
+
+   });
+};
+
+function Registrar() {
+  RegistrarEndereco();
+
+  let emailpassword = {}
+
+  emailpassword.nome = $("#Name").val();
+  emailpassword.sobrenome = $("#lastname").val();
+  emailpassword.password = $("#password").val();
+  emailpassword.email = $("#email").val();
+
+    $.ajax({
+        type: "POST",
+        url: "http://localhost:8080/api/aluno/registrar",
+        data: JSON.stringify(emailpassword),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+            alert('Sucesso!');
+            window.location.href = "login.html";
+        },
+        error: function (msg) {
+          window.location.href = "login.html";
+        }
+
+    });
+};
+
 function login() {
   var emailpassword = {}
 
@@ -36,15 +85,14 @@ function validaUser(){
   if(sessionStorage.getItem('validado') != undefined || null) {
     const email = sessionStorage.getItem('email')
     getUserInfoByEmail(email, function(userInfo){
-      console.log(userInfo)
         $("#setUserName").html('<img src="./resources/img/profile.png" class="profile-icon"> <span class="d-none-md d-inlineblock" style="margin-right: 8px"></span> '+ userInfo.nome + ' '+ userInfo.sobrenome)
     });
     if(sessionStorage.getItem('CursoSelectedId') == undefined || null) {
       getUserIDByEmail(email, function(userID){
         sessionStorage.setItem('ID', userID);
-        getCursoUsuarioByUserID(userID, function(cursos){
-          getCursoInfoByID(cursos.idCurso, cursos.nome, function(OBJ){
-              setSelectedCurso(cursos.idCurso, cursos.nome, cursos.status_curso)
+        getContaByUserID(userID, function(conta){
+          getContaInfoByID(conta.idConta, function(OBJ){
+              setSelectedCurso(conta.idConta, conta.statusPagamento)
               $("#fodase").html(cursos.nome + ' <i class="glyphicon glyphicon-refresh"></i> ')
           })
         })
@@ -73,19 +121,18 @@ function validaUser(){
 
 
 // Lista Disciplina (Menu Superior)
-function ListarCursos() {
+function ListarConta() {
   const email = sessionStorage.getItem('email')
   getUserIDByEmail(email, function(userid){
-    getCursoUsuarioByUserID(userid, function (cursos){
+    getContaByUserID(userid, function (conta){
       for(var i = 0; i < 1; i++){
-        console.log(cursos)
-        getCursoInfoByID(cursos.idCurso, cursos.nome, function(OBJ){
-          console.log(cursos.nome)
+        console.log(conta)
+        getContaInfoByID(conta.idConta, function(OBJ){
+          console.log(conta)
           AdicionarLinhaTabela(
-            cursos.idCurso,
-            cursos.nome,
-            cursos.duracao_periodo,
-            cursos.status_curso,
+            conta.id.Conta,
+            conta.nome_cliente,
+            conta.statusPagamento,
             true
           );
         })
@@ -100,13 +147,11 @@ function changeCurso(curso_id, curso_nome, curso_status) {
   window.location.href = window.location.origin + window.location.pathname; 
 };
 
-function AdicionarLinhaTabela(idCurso, curso_nome, duracao_periodo, status_curso = null, addBotao = false) {
-    var linhaNova = '<tr id="Linha' + idCurso + '">'+
-                        '<td>' + curso_nome + '</td>'+
-                        '<td class="hidden-sm">' + duracao_periodo + ' anos' + '</td>'+
-                        '<td>' + status_curso + '</td>';
+function AdicionarLinhaTabela(idConta, statusPagamento = null, addBotao = false) {
+    var linhaNova = '<tr id="Linha' + idConta + '">'+
+                        '<td>' + statusPagamento + '</td>';
     if(addBotao){
-      linhaNova += '<td class="btn-col"><a href="#" onclick="javascript:changeCurso(' + idCurso + ', \'' + curso_nome + '\''+', \''+ status_curso +'\');"> Selecionar</a></td>';
+      linhaNova += '<td class="btn-col"><a href="#" onclick="javascript:changeCurso(' + idConta + '\''+', \''+ statusPagamento +'\');"> Selecionar</a></td>';
     }
       linhaNova += '</tr>'
     $("#ListaCadastro tbody").prepend(linhaNova);
@@ -183,9 +228,7 @@ function ListarProtocolos(usuario_id, curso_id){
         })
     }
   });
-}
-
-console.log
+};
 
 function AdicionarLinhaTabelaProtocolos(PROTOCOLO){
   var linhaNova = '<tr id="Linha' + PROTOCOLO.id_protocolo + '">'+
@@ -244,11 +287,11 @@ function getSelectedCurso(){
   }
 }
 
-function setSelectedCurso(curso_id, curso_nome, curso_status){
-  console.log(curso_id)
-  sessionStorage.setItem('CursoSelectedId', curso_id);
-  sessionStorage.setItem('cursoSelectedNome', curso_nome);
-  sessionStorage.setItem('cursoSelectedStatus', curso_status);
+function setSelectedCurso(idConta, nome_cliente, statusPagamento){
+  console.log(idConta)
+  sessionStorage.setItem('CursoSelectedId', idConta);
+  sessionStorage.setItem('cursoSelectedNome', nome_cliente);
+  sessionStorage.setItem('cursoSelectedStatus', statusPagamento);
 }
 
 
@@ -288,14 +331,15 @@ function getUserInfoByEmail(email, callback){
   });
 }
 
-function getCursoUsuarioByUserID(id_user, callback){
+function getContaByUserID(id_user, callback){
     $.ajax({
         type: "GET",
-        url: "http://localhost:8080/api/curso_usuario/" + id_user,
+        url: "http://localhost:8080/api/conta/" + id_user,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data) {
-          callback(data[0]);
+          console.log(data.idConta)
+          callback(data.idConta);
         },
         error: function () {
           console.error("Error loading2.5");
@@ -303,11 +347,12 @@ function getCursoUsuarioByUserID(id_user, callback){
     });
   }
 
-function getCursoStatusByUserCurso(usuario_id, curso_id, callback){
-  getCursoUsuarioByUserID(usuario_id, function (cursos){
-    for(var i = 0; i < cursos.length; i++){
-      if(cursos[i][1] == curso_id){
-        callback(cursos[i][0])
+function getContaStatusByUserCurso(usuario_id, idConta, callback){
+  getCursoUsuarioByUserID(usuario_id, function (conta){
+    for(var i = 0; i < conta.length; i++){
+      console.log(conta)
+      if(conta[i][1] == idConta){
+        callback(conta[i][0])
       }
     }
     callback(null)
@@ -315,16 +360,16 @@ function getCursoStatusByUserCurso(usuario_id, curso_id, callback){
 }
 
 
-function getCursoInfoByID(id, status_curso = null, callback){
+function getContaInfoByID(id, statusPagamento = null, callback){
     $.ajax({
         type: "GET",
-        url: "http://localhost:8080/api/curso_usuario/curso_info/" + id,
+        url: "http://localhost:8080/api/conta/conta-info/" + id,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data) {
-          data.id_curso = id;
-          if(status_curso != null){
-            data.status_curso = status_curso;
+          data.idConta = id;
+          if(statusPagamento != null){
+            data.statusPagamento = statusPagamento;
           }
           callback(data);
         },
