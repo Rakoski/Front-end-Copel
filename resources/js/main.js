@@ -11,10 +11,10 @@ function RegistrarEndereco() {
      contentType: "application/json; charset=utf-8",
      dataType: "json",
      success: function (msg) {
-         alert('Sucesso!');
+      sessionStorage.setItem('cep', endereco.cep);
      },
      error: function (msg) {
-      alert("algo deu errado no registro!")
+      sessionStorage.setItem('cep', endereco.cep);
      }
 
    });
@@ -90,16 +90,14 @@ function validaUser(){
     if(sessionStorage.getItem('CursoSelectedId') == undefined || null) {
       getUserIDByEmail(email, function(userID){
         sessionStorage.setItem('ID', userID);
-        getContaByUserID(userID, function(conta){
-          getContaInfoByID(conta.idConta, function(OBJ){
-              setSelectedCurso(conta.idConta, conta.statusPagamento)
-              $("#fodase").html(cursos.nome + ' <i class="glyphicon glyphicon-refresh"></i> ')
-          })
+      getCepsByUserID(userID, function(conta){
+            setSelectedCurso(conta)
+            $("#fodase").html(conta + ' <i class="glyphicon glyphicon-refresh"></i> ')
         })
       });
     } else {
-      const selectedNome = sessionGet('cursoSelectedNome')
-      $("#fodase").html(selectedNome + ' <i class="glyphicon glyphicon-refresh"></i> ')
+      const selectedCep = sessionStorage.getItem('CursoSelectedId')
+      $("#fodase").html(selectedCep + ' <i class="glyphicon glyphicon-refresh"></i> ')
     }
   } else {
     sessionStorage.clear();
@@ -120,22 +118,19 @@ function validaUser(){
 // };
 
 
+
 // Lista Disciplina (Menu Superior)
 function ListarConta() {
   const email = sessionStorage.getItem('email')
   getUserIDByEmail(email, function(userid){
-    getContaByUserID(userid, function (conta){
+    getCepsByUserID(userid, function (conta){
       for(var i = 0; i < 1; i++){
         console.log(conta)
-        getContaInfoByID(conta.idConta, function(OBJ){
-          console.log(conta)
           AdicionarLinhaTabela(
-            conta.id.Conta,
-            conta.nome_cliente,
-            conta.statusPagamento,
+            conta,
+            conta,
             true
           );
-        })
       }
     });
   });
@@ -147,11 +142,11 @@ function changeCurso(curso_id, curso_nome, curso_status) {
   window.location.href = window.location.origin + window.location.pathname; 
 };
 
-function AdicionarLinhaTabela(idConta, statusPagamento = null, addBotao = false) {
+function AdicionarLinhaTabela(idConta, addBotao = false) {
     var linhaNova = '<tr id="Linha' + idConta + '">'+
-                        '<td>' + statusPagamento + '</td>';
+                        '<td>' + idConta + '</td>';
     if(addBotao){
-      linhaNova += '<td class="btn-col"><a href="#" onclick="javascript:changeCurso(' + idConta + '\''+', \''+ statusPagamento +'\');"> Selecionar</a></td>';
+      linhaNova += '<td class="btn-col"><a href="#" onclick="javascript:changeCurso(' + idConta + ');"> Selecionar</a></td>';
     }
       linhaNova += '</tr>'
     $("#ListaCadastro tbody").prepend(linhaNova);
@@ -288,7 +283,6 @@ function getSelectedCurso(){
 }
 
 function setSelectedCurso(idConta, nome_cliente, statusPagamento){
-  console.log(idConta)
   sessionStorage.setItem('CursoSelectedId', idConta);
   sessionStorage.setItem('cursoSelectedNome', nome_cliente);
   sessionStorage.setItem('cursoSelectedStatus', statusPagamento);
@@ -307,6 +301,7 @@ function getUserIDByEmail(email, callback){
       contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function (data) {
+        console.log(data)
         callback(data.idCliente);
       },
       error: function () {
@@ -331,21 +326,20 @@ function getUserInfoByEmail(email, callback){
   });
 }
 
-function getContaByUserID(id_user, callback){
+function getCepsByUserID(id_user, callback){
     $.ajax({
         type: "GET",
-        url: "http://localhost:8080/api/conta/" + id_user,
+        url: "http://localhost:8080/api/endereco/encontre-todos-ceps/" + id_user,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data) {
-          console.log(data.idConta)
-          callback(data.idConta);
+          callback(data)
         },
         error: function () {
           console.error("Error loading2.5");
         },
     });
-  }
+}
 
 function getContaStatusByUserCurso(usuario_id, idConta, callback){
   getCursoUsuarioByUserID(usuario_id, function (conta){
