@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Portal do Nether</title>
+    <link rel="stylesheet" href="resources/css/bootstrap.min.css">
+    <script src="resources/js/jquery.min.js"></script>
+    <script src="resources/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="resources/css/style.css">
+    <link rel="icon" href="./resources/img/copel-icon-2.jpeg" type="image/webp" />
+    <script src="resources/js/main.js"></script>
+</head>
+<link rel="stylesheet" href="resources/css/style.css">
+  <style id="custom-styles-container">
+    body {
+      background: #ffffff;
+      font-family: sans-serif;
+    }
+
+    .c09778def {
+      background: #ffffff;
+    }
+
+    .c4fe5aac7.c0a8a705a {
+      background: #D00E17;
+    }
+
+    .c4fe5aac7.cee294b1d {
+      background: #be800d;
+    }
+
+    .ce6872ff7 {
+      background-color: #c26b1a;
+      color: #ffffff;
+    }
+
+    .ce6872ff7 a,
+    .ce6872ff7 a:visited {
+      color: #ffffff;
+    }
+
+    .c78336f85 {
+      background-color: #c2571a;
+    }
+
+    .c6546c26a {
+      background-color: #D00E17;
+    }
+
+    @supports (mask-image: url('/static/img/branding-generic/copy-icon.svg')) {
+      @supports not (-ms-ime-align: auto) {
+        .ce314e0e0.c499d8e65::before {
+          background-color: #D00E17;
+        }
+      }
+    }
+
+    .input.c17dab895 {
+      border-color: #D00E17;
+    }
+
+    .error-cloud {
+      background-color: #D00E17;
+    }
+
+    .error-fatal {
+      background-color: #D00E17;
+    }
+
+    .error-local {
+      background-color: #D00E17;
+    }
+
+    #alert-trigger {
+      background-color: #D00E17;
+    }
+  </style>
+  <style>
+    /* By default, hide features for javascript-disabled browsing */
+    /* We use !important to override any css with higher specificity */
+    /* It is also overriden by the styles in <noscript> in the header file */
+    .no-js {
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      height: 1px;
+      overflow: hidden;
+      position: absolute;
+      white-space: nowrap;
+      width: 1px;
+    }
+  </style>
+  <noscript>
+    <style>
+      /* We use !important to override the default for js enabled */
+      /* If the display should be other than block, it should be defined specifically here */
+      .js-required {
+        display: none !important;
+      }
+
+      .no-js {
+        clip: auto;
+        clip-path: none;
+        height: auto;
+        overflow: auto;
+        position: static;
+        white-space: normal;
+        width: var(--prompt-width);
+      }
+    </style>
+  </noscript>
+
+  <style>
+    @font-face {
+      font-family: "ColfaxAI";
+      src: url(https://cdn.openai.com/API/fonts/ColfaxAIRegular.woff2) format("woff2"),
+        url(https://cdn.openai.com/API/fonts/ColfaxAIRegular.woff) format("woff");
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: "ColfaxAI";
+      src: url(https://cdn.openai.com/API/fonts/ColfaxAIRegularItalic.woff2) format("woff2"),
+        url(https://cdn.openai.com/API/fonts/ColfaxAIRegularItalic.woff) format("woff");
+      font-weight: normal;
+      font-style: italic;
+    }
+
+    @font-face {
+      font-family: "ColfaxAI";
+      src: url(https://cdn.openai.com/API/fonts/ColfaxAIBold.woff2) format("woff2"),
+        url(https://cdn.openai.com/API/fonts/ColfaxAIBold.woff) format("woff");
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: "ColfaxAI";
+      src: url(https://cdn.openai.com/API/fonts/ColfaxAIBoldItalic.woff2) format("woff2"),
+        url(https://cdn.openai.com/API/fonts/ColfaxAIBoldItalic.woff) format("woff");
+      font-weight: bold;
+      font-style: italic;
+    }
+
+    :root {
+      --font-family: sans-serif;
+      --primary-color: #f0a71f;
+      --primary-color-no-override: #10a33c;
+      --action-primary-color: #10a33c;
+      --link-color: #f0a71f;
+      --input-box-shadow-depth: 1px;
+      --page-background-color: #ffffff;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--page-background-color);
+    }
+
+    .oai-wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100%;
+    }
+
+    .oai-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 0 0;
+      flex: 0 0 auto;
+    }
+
+    .oai-header svg {
+      width: 32px;
+      height: 32px;
+      fill: #202123;
+    }
+
+    .oai-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6e6e80;
+      padding: 12px 0 24px;
+      flex: 0 0 auto;
+    }
+
+    .oai-footer a {
+      color: var(--primary-color);
+      margin: 0 10px;
+    }
+
+    ._widget-auto-layout main._widget {
+      flex: 1 0 auto;
+      min-height: 0;
+    }
+
+    main header>img:first-of-type {
+      display: none;
+    }
+
+    main>section,
+    main>section>div:first-child {
+      box-shadow: none;
+    }
+
+    main header>h1 {
+      font-weight: bold !important;
+      font-size: 32px !important;
+    }
+
+    main a {
+      font-weight: normal !important;
+    }
+
+    .ulp-alternate-action {
+      text-align: center;
+    }
+
+    button[type="submit"] {
+      font-family: var(--font-family);
+    }
+
+
+
+
+    main header>h1 {
+      margin-bottom: 0 !important;
+    }
+
+
+
+
+    div:has(> form[data-provider]) {
+      display: flex;
+      flex-direction: column;
+    }
+
+    form[data-provider="google"] {
+      order: -1;
+    }
+
+    form[data-provider] {
+      margin-bottom: var(--spacing-1);
+    }
+  </style>
+<head>
+  <title>Tabela de Contas COPEL</title>
+  <style>
+      body {
+          font-family: sans-serif;
+          background-color: #ffffff;
+      }
+
+      h1 {
+          color: orangered;
+          text-align: center;
+      }
+
+      table {
+          border-collapse: collapse;
+          width: 80%;
+          margin: 20px auto;
+          background-color: #ffffff;
+          border: 2px solid rgb(253, 174, 26);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      th, td {
+          padding: 12px;
+          text-align: left;
+      }
+
+      th {
+          background-color: rgb(253, 174, 26);
+          color: #ffffff;
+      }
+
+      tr:nth-child(even) {
+          background-color: #f2f2f2;
+      }
+
+      tr:hover {
+          background-color: #dcdcdc;
+      }
+  </style>
+</head>
+<body onload="javascript:ListarConta();">
+  <nav class="custom-navbar" style="border-bottom: 2px #e47309 solid;">
+      <div class="container-fluid">
+          <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+              </button>
+              <a href="home.html" class="navbar-brand textBig"><img src="./resources/img/logo-copel3.jpeg" width="150px"></a>
+          </div>
+          <div id="navbar" class="collapse navbar-collapse" style="background-color: #ffffff;">
+              <ul class="nav navbar-nav navbar-right">
+                  <li><a href="#cursos" class="course-btn" id="fodase" style="background-color: #e46109; color: #fff; border-radius: 5px;"><i class="glyphicon glyphicon-refresh"></i></a></li>
+                  <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" style="padding: 7px; margin-left: 10px;"  id="setUserName"> 
+                      
+                      </a>
+                      <ul class="dropdown-menu">    
+                      <li><a href="#">Meu Perfil</a></li>
+                      <li><a href="#">Dados Cadastrais</a></li>
+                      <li role="separator" class="divider"></li>
+                      <li><a href="#">Alterar Senha</a></li>
+                      </ul>
+                  </li>
+                  <li><a onclick="logout()">Sair <i class="glyphicon glyphicon-log-out"></i></a></li>
+              </ul>
+          </div>
+      </div>
+  </nav>
+
+  <div id="cursos" class="overlay">
+    <div class="popup">
+        <h2>Selecione a conta</h2>
+        <a class="close" href="#">&times;</a>
+        <div class="content">
+            <div class="table-responsive">
+                <table id="ListaCadastro" class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome da conta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+  </div>
+  
+    <h1 class="cf39ec6c9 cad56ad79">Tabela de Contas COPEL</h1>
+
+  <table>
+      <tr>
+          <th>ID da Conta</th>
+          <th>ID do Cliente</th>
+          <th>Valor a Pagar</th>
+          <th>Data de Vencimento</th>
+          <th>Status de Pagamento</th>
+          <th>Kilowatts/hora</th>
+      </tr>
+      <tr>
+          <td>1</td>
+          <td>Neymar Jr</td>
+          <td>R$ 15000.00</td>
+          <td>15/09/2023</td>
+          <td>Aguardando PIX do Sheik</td>
+          <td>450</td>
+      </tr>
+
+      <!-- Adicione mais linhas de dados conforme necessário -->
+  </table>
+  <script>
+    validaUser();
+  </script>
+</body>
+
+</html>
