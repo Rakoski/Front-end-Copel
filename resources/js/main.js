@@ -1,3 +1,5 @@
+let selectedCep = null;
+
 function RegistrarEndereco() {
   let endereco = {}
 
@@ -81,28 +83,28 @@ function logout(){
   window.location.href = `login.html`;
 }
 
-function validaUser(){
-  if(sessionStorage.getItem('validado') != undefined || null) {
+function validaUser() {
+  if (sessionStorage.getItem('validado') != undefined || null) {
     const email = sessionStorage.getItem('email')
-    getUserInfoByEmail(email, function(userInfo){
-        $("#setUserName").html('<img src="./resources/img/profile.png" class="profile-icon"> <span class="d-none-md d-inlineblock" style="margin-right: 8px"></span> '+ userInfo.nome + ' '+ userInfo.sobrenome)
+    getUserInfoByEmail(email, function (userInfo) {
+      $("#setUserName").html('<img src="./resources/img/profile.png" class="profile-icon"> <span class="d-none-md d-inlineblock" style="margin-right: 8px"></span> ' + userInfo.nome + ' ' + userInfo.sobrenome)
     });
-    if(sessionStorage.getItem('CursoSelectedId') == undefined || null) {
-      getUserIDByEmail(email, function(userID){
+    if (sessionStorage.getItem('CursoSelectedId') == undefined || null) {
+      getUserIDByEmail(email, function (userID) {
         sessionStorage.setItem('ID', userID);
-      getCepsByUserID(userID, function(conta){
-            setSelectedCurso(conta)
-            $("#fodase").html(conta + ' <i class="glyphicon glyphicon-refresh"></i> ')
+        getCepsByUserID(userID, function (conta) {
+          setSelectedCurso(selectedCep);
+          $("#fodase").html(selectedCep + ' <i class="glyphicon glyphicon-refresh"></i> ');
         })
       });
     } else {
-      const selectedCep = sessionStorage.getItem('CursoSelectedId')
-      $("#fodase").html(selectedCep + ' <i class="glyphicon glyphicon-refresh"></i> ')
+      const selectedCep = sessionStorage.getItem('CursoSelectedId');
+      $("#fodase").html(selectedCep + ' <i class="glyphicon glyphicon-refresh"></i> ');
     }
   } else {
     sessionStorage.clear();
     window.location.href = "login.html";
-    return false
+    return false;
   }
 }
 
@@ -125,7 +127,6 @@ function ListarConta() {
   getUserIDByEmail(email, function(userid){
     getCepsByUserID(userid, function (conta){
       for(var i = 0; i < 1; i++){
-        console.log(conta)
           AdicionarLinhaTabela(
             conta,
             conta,
@@ -136,22 +137,27 @@ function ListarConta() {
   });
 }
 
-function changeCurso(curso_id, curso_nome, curso_status) {
-  setSelectedCurso(curso_id, curso_nome, curso_status)
-  $("#fodase").html(curso_nome + ' <i class="glyphicon glyphicon-refresh"></i> ')
-  window.location.href = window.location.origin + window.location.pathname; 
-};
+function changeCurso(curso_id, curso_nome) {
+  selectedCep = curso_nome;
+  sessionStorage.setItem('CursoSelectedId', curso_nome);
+  $("#fodase").html(selectedCep + ' <i class="glyphicon glyphicon-refresh"></i> ');
+}
 
-function AdicionarLinhaTabela(idConta, addBotao = false) {
-    var linhaNova = '<tr id="Linha' + idConta + '">'+
-                        '<td>' + idConta + '</td>';
-    if(addBotao){
-      linhaNova += '<td class="btn-col"><a href="#" onclick="javascript:changeCurso(' + idConta + ');"> Selecionar</a></td>';
+
+function AdicionarLinhaTabela(idConta, cep, addBotao = false) {
+  for (var i = 0; i < idConta.length; i++) {
+    var linhaNova = '<tr id="Linha' + idConta[i] + '">' +
+                    '<td>' + cep[i] + '</td>';
+    if (addBotao) {
+      linhaNova += '<td class="btn-col"><a href="#" onclick="javascript:changeCurso(' + idConta[i] + ', \'' + cep[i] + '\');"> Selecionar</a></td>';
     }
-      linhaNova += '</tr>'
+    linhaNova += '</tr>';
     $("#ListaCadastro tbody").prepend(linhaNova);
-    $('#myModal').modal().hide();
-};
+  }
+  $('#myModal').modal().hide();
+}
+
+
 
 function ListarDisciplinas(usuario_id) {
   const curso_id = sessionStorage.getItem('CursoSelectedId')
@@ -282,10 +288,10 @@ function getSelectedCurso(){
   }
 }
 
-function setSelectedCurso(idConta, nome_cliente, statusPagamento){
+function setSelectedCurso(idConta,){
   sessionStorage.setItem('CursoSelectedId', idConta);
-  sessionStorage.setItem('cursoSelectedNome', nome_cliente);
-  sessionStorage.setItem('cursoSelectedStatus', statusPagamento);
+  sessionStorage.setItem('cursoSelectedNome', idConta);
+  sessionStorage.setItem('cursoSelectedStatus', idConta);
 }
 
 
@@ -301,7 +307,6 @@ function getUserIDByEmail(email, callback){
       contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function (data) {
-        console.log(data)
         callback(data.idCliente);
       },
       error: function () {
@@ -333,6 +338,7 @@ function getCepsByUserID(id_user, callback){
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data) {
+
           callback(data)
         },
         error: function () {
