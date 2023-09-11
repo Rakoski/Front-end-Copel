@@ -1,4 +1,5 @@
 let selectedCep = null;
+let SelectedCepId = null;
 
 function RegistrarEndereco() {
   let endereco = {}
@@ -89,16 +90,16 @@ function validaUser() {
     getUserInfoByEmail(email, function (userInfo) {
       $("#setUserName").html('<img src="./resources/img/profile.png" class="profile-icon"> <span class="d-none-md d-inlineblock" style="margin-right: 8px"></span> ' + userInfo.nome + ' ' + userInfo.sobrenome)
     });
-    if (sessionStorage.getItem('CursoSelectedId') == undefined || null) {
+    if (sessionStorage.getItem('CepSelectedNumero') == undefined || null) {
       getUserIDByEmail(email, function (userID) {
         sessionStorage.setItem('ID', userID);
         getCepsByUserID(userID, function (conta) {
-          setSelectedCurso(conta[0]);
+          setSelectedCep(conta[0]);
           $("#fodase").html(conta[0] + ' <i class="glyphicon glyphicon-refresh"></i> ');
         })
       });
     } else {
-      const selectedCep = sessionStorage.getItem('CursoSelectedId');
+      const selectedCep = sessionStorage.getItem('CepSelectedNumero');
       $("#fodase").html(selectedCep + ' <i class="glyphicon glyphicon-refresh"></i> ');
     }
   } else {
@@ -120,15 +121,12 @@ function validaUser() {
 // };
 
 
-
-// Lista Disciplina (Menu Superior)
-function ListarConta() {
+function ListarCeps() {
   const email = sessionStorage.getItem('email')
   getUserIDByEmail(email, function(userid){
     getCepsByUserID(userid, function (conta){
       for(var i = 0; i < 1; i++){
           AdicionarLinhaTabela(
-            conta,
             conta,
             true
           );
@@ -137,19 +135,37 @@ function ListarConta() {
   });
 }
 
-function changeCurso(curso_id, curso_nome) {
-  selectedCep = curso_nome;
-  sessionStorage.setItem('CursoSelectedId', curso_nome);
+function ListarContaDeLuz() {
+  const idEndereco = sessionStorage.getItem('E')
+}
+
+function changeCep(curso_nome, fullData) {
+  
+  const parts = fullData.split(',');
+  const id = parts[0];
+  const cep = parts[1];
+  const numero = parts[2];
+
+  // Nós só queremos mostrar o cep pra pessoa, caso ela queira muda-lo, não precisa mostrar o id
+  selectedCep = cep;
+  sessionStorage.setItem('CepSelectedNumero', cep);
+  sessionStorage.setItem('CepSelectedId', id)
+  sessionStorage.setItem('CepSelectedId', numero)
   $("#fodase").html(selectedCep + ' <i class="glyphicon glyphicon-refresh"></i> ');
 }
 
+function AdicionarLinhaTabela(cepData, addBotao = false) {
+  for (var i = 0; i < cepData.length; i++) {
+    const fullData = cepData[i];
+    const parts = fullData.split(',');
+    const cep = parts[1];
+    const numeroEndereco = parts[2]
 
-function AdicionarLinhaTabela(idConta, cep, addBotao = false) {
-  for (var i = 0; i < idConta.length; i++) {
-    var linhaNova = '<tr id="Linha' + idConta[i] + '">' +
-                    '<td>' + cep[i] + '</td>';
+    var linhaNova = '<tr id="Linha">' +
+                    '<td>' + cep + '</td>' +
+                    '<td>' + numeroEndereco + '</td>';
     if (addBotao) {
-      linhaNova += '<td class="btn-col"><a href="#" onclick="javascript:changeCurso(' + idConta[i] + ', \'' + cep[i] + '\');"> Selecionar</a></td>';
+      linhaNova += '<td class="btn-col"><a href="#" onclick="javascript:changeCep(\'' + cep + '\', \'' + fullData + '\');"> Selecionar</a></td>';
     }
     linhaNova += '</tr>';
     $("#ListaCadastro tbody").prepend(linhaNova);
@@ -157,124 +173,6 @@ function AdicionarLinhaTabela(idConta, cep, addBotao = false) {
   $('#myModal').modal().hide();
 }
 
-
-
-function ListarDisciplinas(usuario_id) {
-  const curso_id = sessionStorage.getItem('CursoSelectedId')
-    getDisciplinasByCursoID(curso_id, usuario_id, function(disciplinas){
-      for(var i = 0; i < disciplinas.length; i++){
-        console.log(disciplinas)
-        console.log(disciplinas[i].nome_disciplina);
-        getDisciplinasByUserID(
-          disciplinas.usuario_id, 
-          disciplinas[i].idDisciplinas, 
-          disciplinas[i].nomeDisciplina, 
-          disciplinas[i].professor, 
-          function(OBJ){
-            AdicionarLinhaTabelaDisciplinas(
-              OBJ.disciplina_id,
-              OBJ.disciplina_nome,
-              OBJ.disciplina_professor,
-              OBJ.status_disciplina,
-              OBJ.nota
-            );
-          }
-        );
-      }
-
-    });
-}
-
-function AdicionarLinhaTabelaDisciplinas(disciplina_id, disciplina_nome, disciplina_professor, status_disciplina, nota) {
-  var linhaNova = '<tr id="Linha' + disciplina_id + '">'+
-                      '<td>' + disciplina_nome + '</td>'+
-                      '<td>' + disciplina_professor + '</td>';
-  if(nota != null) {
-    linhaNova += '<td>'+ nota +'</td>';
-  } else{
-    linhaNova += '<td >-</td>'
-  }
-  if (status_disciplina == 'APROVADO'){
-    linhaNova += '<td class="disc-obs aproved">'+ status_disciplina +'</td>';
-  } else if (status_disciplina == 'REPROVADO'){
-    linhaNova += '<td class="disc-obs reproved">'+ status_disciplina +'</td>';
-  } else {
-    linhaNova += '<td >'+ status_disciplina +'</td>';
-  }
-    linhaNova += '</tr>';
-
-  $("#ListarDisciplinas tbody").prepend(linhaNova);
-  $('#myModal').modal().hide();
-};
-
-function ListarProtocolos(usuario_id, curso_id){
-  getProtocoloByUser(usuario_id, curso_id, function(protocolos){
-    var OBJ
-    for(var i = 0; i < protocolos.length; i++){
-        OBJ = {
-          "id_protocolo": protocolos[i][0],
-          "id_usuario": protocolos[i][9],
-          "id_curso": protocolos[i][1],
-          "protocolo_typeID" : protocolos[i][8],
-          "protocolo_status" : protocolos[i][7],
-          "protocolo_etapa" : protocolos[i][5],
-          "protocolo_setor" : protocolos[i][6],
-          "protocolo_campo" : protocolos[i][2],
-          "protocolo_docpath" : protocolos[i][3],
-          "protocolo_docreturn" : protocolos[i][4],
-          "protocolo_nome": null
-        }
-        getProtocoloTypeByID(protocolos[i][8], OBJ, function(data){
-          AdicionarLinhaTabelaProtocolos(data);
-        })
-    }
-  });
-};
-
-function AdicionarLinhaTabelaProtocolos(PROTOCOLO){
-  var linhaNova = '<tr id="Linha' + PROTOCOLO.id_protocolo + '">'+
-                    '<td style="padding: 18px 8px">' + PROTOCOLO.id_protocolo + '</td>' +
-                    '<td style="padding: 18px 8px">' + PROTOCOLO.protocolo_nome + '</td>' +
-                    '<td style="width: 80px; text-align: right; padding: 18px 10px">' + PROTOCOLO.protocolo_status + '</td>'+
-                    '<td class="btn-col"><a href="#" onClick="javascript:verProtocolo('+ PROTOCOLO.id_protocolo +')">VER</a></td>'
-      linhaNova +='</tr>'
-
-  $("#ListarProtocolos tbody").prepend(linhaNova);
-  $('#myModal').modal().hide();
-}
-
-function verProtocolo(id_protocolo){
-  getProtocoloByID(id_protocolo, function(PROTOCOLO){
-    getProtocoloTypeByID(PROTOCOLO.protocoloTypeId, PROTOCOLO, function(PROTOCOLO){
-      console.log(PROTOCOLO)
-      $( "#openProtocolo" ).addClass( "show" );
-      $('#protocolo_id').text('Protocolo #'+PROTOCOLO.id_protocolo);
-      $('#protocolo_nome').text(PROTOCOLO.protocolo_nome);
-      $('#protocolo_status').text(PROTOCOLO.protocoloStatus);
-      $('#protocolo_setor').text(PROTOCOLO.protocoloSetor);
-      $('#protocolo_etapa').text(PROTOCOLO.protocoloEtapa + '/' + PROTOCOLO.protocoloEtapa);
-      $('#protocolo_campo').text(PROTOCOLO.protocoloCampo);
-      $('#protocolo_nome').text(PROTOCOLO.protocolo_nome);
-
-      
-      if(PROTOCOLO.protocoloDocpath != null){
-        $("#protocolo-file" ).addClass( "btn-col" );
-        $('#protocolo-file').html('<a href="'+ PROTOCOLO.protocoloDocpath + '" target="_blank">Acessar</a>');
-      }
-      
-      if(PROTOCOLO.protocoloDocreturn != null){
-        $("#protocolo-return" ).addClass( "btn-col" );
-        console.log('protocoloDocreturn = ' + PROTOCOLO.protocoloDocreturn)
-        $('#protocolo-return').html('<a href="'+ PROTOCOLO.protocoloDocreturn + '" target="_blank">Acessar</a>');
-      }
-
-      getCursoInfoByID(PROTOCOLO.cursoId, null, function(CURSO){
-        $('#protocolo_curso').text(CURSO.nome);
-      });
-
-    })
-  });
-}
 function closeProtocolo(){
   $( "#openProtocolo" ).removeClass( "show" );
 }
@@ -282,14 +180,14 @@ function closeProtocolo(){
 function getSelectedCurso(){
   return {
     "user_id": sessionGet('ID'),
-    "curso_id": sessionGet('CursoSelectedId'),
+    "curso_id": sessionGet('CepSelectedNumero'),
     "curso_nome": sessionGet('cursoSelectedNome'),
     "curso_status": sessionGet('cursoSelectedStatus')
   }
 }
 
-function setSelectedCurso(idConta,){
-  sessionStorage.setItem('CursoSelectedId', idConta);
+function setSelectedCep(idConta){
+  sessionStorage.setItem('CepSelectedNumero', idConta);
   sessionStorage.setItem('cursoSelectedNome', idConta);
   sessionStorage.setItem('cursoSelectedStatus', idConta);
 }
@@ -332,25 +230,33 @@ function getUserInfoByEmail(email, callback){
 }
 
 function getCepsByUserID(id_user, callback){
-    $.ajax({
-        type: "GET",
-        url: "http://localhost:8080/api/endereco/encontre-todos-ceps/" + id_user,
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (data) {
-
-          callback(data)
-        },
-        error: function () {
-          console.error("Error loading2.5");
-        },
-    });
+  $.ajax({
+      type: "GET",
+      url: "http://localhost:8080/api/cliente-endereco/encontre-todos-ceps/" + id_user,
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function (data) {
+        const cepData = []; // Array to store the full CEP data
+  
+        for (let i = 0; i < data.length; i++) {
+          const parts = data[i].split(','); 
+          const cep = parts[1].trim(); 
+          const idCep = parts[0].trim();
+          cepData.push(data[i]); // Store the full CEP data
+        }
+        
+        callback(cepData); // Pass the full CEP data to the callback
+      },
+      error: function () {
+        console.error("Error loading2.5");
+      },
+  });
 }
+
 
 function getContaStatusByUserCurso(usuario_id, idConta, callback){
   getCursoUsuarioByUserID(usuario_id, function (conta){
     for(var i = 0; i < conta.length; i++){
-      console.log(conta)
       if(conta[i][1] == idConta){
         callback(conta[i][0])
       }
@@ -360,10 +266,10 @@ function getContaStatusByUserCurso(usuario_id, idConta, callback){
 }
 
 
-function getContaInfoByID(id, statusPagamento = null, callback){
+function getContaInfoByIDEndereco(id, statusPagamento = null, callback){
     $.ajax({
         type: "GET",
-        url: "http://localhost:8080/api/conta/conta-info/" + id,
+        url: "http://localhost:8080/api/conta/conta-endereco/" + id,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data) {
