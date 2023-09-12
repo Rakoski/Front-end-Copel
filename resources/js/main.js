@@ -19,14 +19,14 @@ function getUserIDByEmail(email, callback){
 
 function RegistrarEndereco() {
 
+  let endereco = {}
+  endereco.cep = $("#cep").val();
+  endereco.numero = $("#numero").val();
+
   function ehUmCepValido(cep) {
     const cepPattern = /^\d{5}-\d{3}$/;
     return cepPattern.test(cep);
   }
-  
-  let endereco = {}
-  endereco.cep = $("#cep").val();
-  endereco.numero = $("#numero").val();
   
   if (!ehUmCepValido(endereco.cep)) {
     alert("Formato de CEP Inválido!'.");
@@ -80,7 +80,7 @@ function pegaIdDoEnderecoComBaseNoCep(callback) {
 }
 
 
-function Registrar() {
+function RegistrarCliente() {
 
   let emailpassword = {}
 
@@ -107,7 +107,7 @@ function Registrar() {
 
 function RegistraClienteComSeuEndereco() {
   RegistrarEndereco();
-  Registrar();
+  RegistrarCliente();
 
   let emailpassword = {}
 
