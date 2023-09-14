@@ -344,26 +344,21 @@
   
     <h1 class="cf39ec6c9 cad56ad79">Tabela de Contas COPEL</h1>
 
-  <table>
-      <tr>
-          <th>ID da Conta</th>
-          <th>ID do Cliente</th>
-          <th>Valor a Pagar</th>
-          <th>Data de Vencimento</th>
-          <th>Status de Pagamento</th>
-          <th>Kilowatts/hora</th>
-      </tr>
-      <tr>
-          <td>1</td>
-          <td>Neymar Jr</td>
-          <td>R$ 15000.00</td>
-          <td>15/09/2023</td>
-          <td>Aguardando PIX do Sheik</td>
-          <td>450</td>
-      </tr>
-
-      <!-- Adicione mais linhas de dados conforme necessário -->
+    <table>
+      <thead>
+          <tr>
+              <th>ID da Conta</th>
+              <th>ID do Cliente</th>
+              <th>Valor a Pagar</th>
+              <th>Data de Vencimento</th>
+              <th>Status de Pagamento</th>
+              <th>Kilowatts/hora</th>
+          </tr>
+      </thead>
+      <tbody id="table-body">
+      </tbody>
   </table>
+  
   <script>
     validaUser();
   </script>
