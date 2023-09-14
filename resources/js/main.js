@@ -3,12 +3,14 @@ let SelectedCepId = null;
 
 
 function getUserIDByEmail(email, callback){
+  console.log(email)
   $.ajax({
       type: "GET",
       url: "http://localhost:8080/api/aluno/encontre/" + email,
       contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function (data) {
+        console.log(data)
         callback(data.idCliente);
       },
       error: function (error) {
@@ -22,6 +24,7 @@ function RegistrarEndereco() {
   let endereco = {}
   endereco.cep = $("#cep").val();
   endereco.numero = $("#numero").val();
+  const tamanho_maximo_do_cep = 5
 
   function ehUmCepValido(cep) {
     const cepPattern = /^\d{5}-\d{3}$/;
@@ -34,12 +37,10 @@ function RegistrarEndereco() {
   }
 
 
-  if (endereco.numero.length > 5) {
+  if (endereco.numero.length > tamanho_maximo_do_cep) {
     alert("Números podem ter até 5 caracteres.");
     return; 
   }
-
-  if (endereco.cep && endereco.numero) {
 
     $.ajax({
       type: "POST",
@@ -56,10 +57,7 @@ function RegistrarEndereco() {
  
     });
 
-  } else {
-    console.log("Objeto do endereço não está sendo formado corretamenta.");
-  }
-};
+} 
 
 function pegaIdDoEnderecoComBaseNoCep(callback) {
   const cep = $("#cep").val();
@@ -109,11 +107,11 @@ function RegistraClienteComSeuEndereco() {
   RegistrarEndereco();
   RegistrarCliente();
 
-  let emailpassword = {}
+  let emailHash = {}
 
-  emailpassword.email = $("#email").val();
+  emailHash.email = $("#email").val();
 
-  getUserIDByEmail(emailpassword.email, function (userId) {
+  getUserIDByEmail(emailHash.email, function (userId) {
     pegaIdDoEnderecoComBaseNoCep(function (enderecoIds) {
         const clienteEndereco = {
           clienteId: userId,
@@ -268,6 +266,37 @@ function AdicionarLinhaTabela(cepData, addBotao = false) {
   }
   $('#myModal').modal().hide();
 }
+
+function AdicionarLinhaTabelaContas(contaData, addBotao = false) {
+  for (var i = 0; i < contaData.length; i++) {
+      const data = contaData[i];
+
+      var newRow = '<tr id="Linha">' +
+          '<td>' + data.contaId + '</td>' +
+          '<td>' + data.cliente + '</td>' +
+          '<td>R$ ' + data.valorAPagar.toFixed(2) + '</td>';
+
+      const date = new Date(data.dataDeVencimento);
+      newRow += '<td>' + date.toLocaleDateString() + '</td>';
+
+      newRow += '<td>' + data.statusPagamento + '</td>' +
+          '<td>' + data.kilowattsHora + '</td>';
+
+      if (addBotao) {
+          newRow += '<td class="btn-col"><a href="#" onclick="javascript:changeCep(\'' + JSON.stringify(data) + '\');">Selecionar</a></td>';
+      }
+      newRow += '</tr>';
+
+      $("#table-body").prepend(newRow);
+  }
+
+  if (addBotao) {
+      $('#myModal').modal('hide');
+  }
+}
+
+getContaInfoByIDEndereco(sessionStorage.getItem('ID'), null, AdicionarLinhaTabelaContas);
+
 
 function getSelectedCurso(){
   return {
