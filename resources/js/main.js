@@ -3,14 +3,12 @@ let SelectedCepId = null;
 
 
 function getUserIDByEmail(email, callback){
-  console.log(email)
   $.ajax({
       type: "GET",
       url: "http://localhost:8080/api/cliente/encontre/" + email,
       contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function (data) {
-        console.log(data)
         callback(data.idCliente);
       },
       error: function (error) {
@@ -97,7 +95,7 @@ function RegistrarCliente() {
             console.log('Sucesso!');
         },
         error: function (error) {
-          console.log("ocorreu um erro no registro do cliente: " + error)
+          console.error("ocorreu um erro no registro do cliente: " + error)
         }
 
     });
@@ -164,6 +162,14 @@ function login() {
   });
 }
 
+function setSelectedCep(cep) {
+  const cepElement = $("#fodase");
+  const refreshIcon = '<i class="glyphicon glyphicon-refresh"></i>';
+  const formattedCep = `${cep} ${refreshIcon}`;
+  cepElement.html(formattedCep);
+}
+
+
 function logout(){
   sessionStorage.clear();
   window.location.href = `login.html`;
@@ -200,11 +206,10 @@ function updateCep() {
   if (selectedCep === undefined || selectedCep === null) {
     const email = getSessionEmail();
     getUserIDByEmail(email, function (userID) {
-      sessionStorage.setItem('ID', userID);
       getCepsByUserID(userID, function (cep) {
         const firstCep = cep[0].split(',')[1].trim();
-        setSelectedCep(firstCep);
         $("#fodase").html(`${firstCep} <i class="glyphicon glyphicon-refresh"></i>`);
+        setSelectedCep(firstCep);
       });
     });
   } else {
@@ -256,16 +261,18 @@ function changeCep(fullData) {
   const cep = parts[1];
   const numero = parts[2];
 
-  // Nós só queremos mostrar o cep e o número da rua pra pessoa, caso ela queira muda-lo, não precisa mostrar o id
   selectedCep = cep;
-  sessionStorage.setItem('CepSelectedNumero', cep);
-  sessionStorage.setItem('CepSelectedId', id)
-  sessionStorage.setItem('CepSelectedIdNumeroRua', numero)
+
+  storeCepInSession(cep, id, numero);
+
   $("#fodase").html(selectedCep + ' <i class="glyphicon glyphicon-refresh"></i> ');
+  window.location.reload();
 }
 
-function AdicionarLinhaTabelaConta(contaData) {
-
+function storeCepInSession(cep, id, numero) {
+  sessionStorage.setItem('CepSelectedNumero', cep);
+  sessionStorage.setItem('CepSelectedId', id);
+  sessionStorage.setItem('CepSelectedIdNumeroRua', numero);
 }
 
 function AdicionarLinhaTabela(cepData, addBotao = false) {
@@ -293,7 +300,7 @@ function AdicionarLinhaTabelaContas(contaData, addBotao = false) {
 
       var newRow = '<tr id="Linha">' +
           '<td>' + data.contaId + '</td>' +
-          '<td>' + data.cliente + '</td>' +
+          '<td>' + data.enderecoId + '</td>' +
           '<td>R$ ' + data.valorAPagar.toFixed(2) + '</td>';
 
       const date = new Date(data.dataDeVencimento);
@@ -315,22 +322,7 @@ function AdicionarLinhaTabelaContas(contaData, addBotao = false) {
   }
 }
 
-getContaInfoByIDEndereco(sessionStorage.getItem('ID'), null, AdicionarLinhaTabelaContas);
-
-
-function getSelectedCurso(){
-  return {
-    "user_id": sessionGet('ID'),
-    "curso_id": sessionGet('CepSelectedNumero'),
-  }
-}
-
-function setSelectedCep(idConta){
-  sessionStorage.setItem('CepSelectedNumero', idConta);
-  sessionStorage.setItem('cursoSelectedNome', idConta);
-  sessionStorage.setItem('cursoSelectedStatus', idConta);
-}
-
+getContaInfoByIDEndereco(sessionStorage.getItem('CepSelectedId'), null, AdicionarLinhaTabelaContas);
 
 function sessionGet(chave){
   return sessionStorage.getItem(chave)
@@ -367,23 +359,12 @@ function getCepsByUserID(id_user, callback){
           cepData.push(data[i]); 
         }
         
+        sessionStorage.setItem('CepSelectedId', cepData[0][0])
         callback(cepData); 
       },
       error: function () {
         console.error("Error loading2.5");
       },
-  });
-}
-
-
-function getContaStatusByUserCurso(usuario_id, idConta, callback){
-  getCursoUsuarioByUserID(usuario_id, function (conta){
-    for(let i = 0; i < conta.length; i++){
-      if(conta[i][1] == idConta){
-        callback(conta[i][0])
-      }
-    }
-    callback(null)
   });
 }
 
