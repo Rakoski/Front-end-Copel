@@ -3,12 +3,14 @@ let SelectedCepId = null;
 
 
 function getUserIDByEmail(email, callback){
+  console.log(email)
   $.ajax({
       type: "GET",
-      url: "http://localhost:8080/api/aluno/encontre/" + email,
+      url: "http://localhost:8080/api/cliente/encontre/" + email,
       contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function (data) {
+        console.log(data)
         callback(data.idCliente);
       },
       error: function (error) {
@@ -22,6 +24,7 @@ function RegistrarEndereco() {
   let endereco = {}
   endereco.cep = $("#cep").val();
   endereco.numero = $("#numero").val();
+  const tamanho_maximo_do_cep = 5
 
   function ehUmCepValido(cep) {
     const cepPattern = /^\d{5}-\d{3}$/;
@@ -34,12 +37,10 @@ function RegistrarEndereco() {
   }
 
 
-  if (endereco.numero.length > 5) {
+  if (endereco.numero.length > tamanho_maximo_do_cep) {
     alert("Números podem ter até 5 caracteres.");
     return; 
   }
-
-  if (endereco.cep && endereco.numero) {
 
     $.ajax({
       type: "POST",
@@ -56,10 +57,7 @@ function RegistrarEndereco() {
  
     });
 
-  } else {
-    console.log("Objeto do endereço não está sendo formado corretamenta.");
-  }
-};
+} 
 
 function pegaIdDoEnderecoComBaseNoCep(callback) {
   const cep = $("#cep").val();
@@ -91,7 +89,7 @@ function RegistrarCliente() {
 
     $.ajax({
         type: "POST",
-        url: "http://localhost:8080/api/aluno/registrar",
+        url: "http://localhost:8080/api/cliente/registrar",
         data: JSON.stringify(emailpassword),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -109,11 +107,11 @@ function RegistraClienteComSeuEndereco() {
   RegistrarEndereco();
   RegistrarCliente();
 
-  let emailpassword = {}
+  let emailHash = {}
 
-  emailpassword.email = $("#email").val();
+  emailHash.email = $("#email").val();
 
-  getUserIDByEmail(emailpassword.email, function (userId) {
+  getUserIDByEmail(emailHash.email, function (userId) {
     pegaIdDoEnderecoComBaseNoCep(function (enderecoIds) {
         const clienteEndereco = {
           clienteId: userId,
@@ -126,12 +124,10 @@ function RegistraClienteComSeuEndereco() {
           data: JSON.stringify(clienteEndereco),
           contentType: "application/json; charset=utf-8",
           dataType: "json",
-          success: function (msg) {
-            console.log('Cliente registrado com sucesso!');
+          success: function () {
             window.location.href = 'login.html'
           },
-          error: function (msg) {
-            console.log('Ocorreu um erro ao registrar o cliente com o endereço.');
+          error: function () {
             window.location.href = 'login.html'
           }
         });
@@ -148,7 +144,7 @@ function login() {
 
   $.ajax({
     type: "POST",
-    url: "http://localhost:8080/api/aluno/login",
+    url: "http://localhost:8080/api/cliente/login",
     data: JSON.stringify(emailpassword),
     contentType: "application/json; charset=utf-8",
     dataType: "text",
@@ -174,31 +170,53 @@ function logout(){
 }
 
 function validaUser() {
-  if (sessionStorage.getItem('validado') != undefined || null) {
-    const email = sessionStorage.getItem('email');
-    getUserInfoByEmail(email, function (userInfo) {
-      $("#setUserName").html('<img src="./resources/img/profile.png" class="profile-icon"> <span class="d-none-md d-inlineblock" style="margin-right: 8px"></span> ' + userInfo.nome + ' ' + userInfo.sobrenome);
-    });
-
-    if (sessionStorage.getItem('CepSelectedNumero') == undefined || sessionStorage.getItem('CepSelectedNumero') == null) {
-      getUserIDByEmail(email, function (userID) {
-        sessionStorage.setItem('ID', userID);
-        getCepsByUserID(userID, function (cep) {
-          const selectedCep = cep[0].split(',')[1].trim(); 
-          setSelectedCep(selectedCep);
-          $("#fodase").html(selectedCep + ' <i class="glyphicon glyphicon-refresh"></i> ');
-        });
-      });
-    } else {
-      const selectedCep = sessionStorage.getItem('CepSelectedNumero'); 
-      $("#fodase").html(selectedCep + ' <i class="glyphicon glyphicon-refresh"></i> ');
-    }
+  if (isUserValidated()) {
+    const email = getSessionEmail();
+    updateUserName(email);
+    updateCep();
   } else {
-    sessionStorage.clear();
-    window.location.href = "login.html";
-    return false;
+    clearSessionAndRedirectToLogin();
   }
 }
+
+function isUserValidated() {
+  const validated = sessionStorage.getItem('validado');
+  return validated !== undefined && validated !== null;
+}
+
+function getSessionEmail() {
+  return sessionStorage.getItem('email');
+}
+
+function updateUserName(email) {
+  getUserInfoByEmail(email, function (userInfo) {
+    const fullName = `${userInfo.nome} ${userInfo.sobrenome}`;
+    $("#setUserName").html(`<img src="./resources/img/profile.png" class="profile-icon"> <span class="d-none-md d-inlineblock" style="margin-right: 8px"></span> ${fullName}`);
+  });
+}
+
+function updateCep() {
+  const selectedCep = sessionStorage.getItem('CepSelectedNumero');
+  if (selectedCep === undefined || selectedCep === null) {
+    const email = getSessionEmail();
+    getUserIDByEmail(email, function (userID) {
+      sessionStorage.setItem('ID', userID);
+      getCepsByUserID(userID, function (cep) {
+        const firstCep = cep[0].split(',')[1].trim();
+        setSelectedCep(firstCep);
+        $("#fodase").html(`${firstCep} <i class="glyphicon glyphicon-refresh"></i>`);
+      });
+    });
+  } else {
+    $("#fodase").html(`${selectedCep} <i class="glyphicon glyphicon-refresh"></i>`);
+  }
+}
+
+function clearSessionAndRedirectToLogin() {
+  sessionStorage.clear();
+  window.location.href = "login.html";
+}
+
 
 
 // function getQueryParams() {
@@ -269,6 +287,37 @@ function AdicionarLinhaTabela(cepData, addBotao = false) {
   $('#myModal').modal().hide();
 }
 
+function AdicionarLinhaTabelaContas(contaData, addBotao = false) {
+  for (var i = 0; i < contaData.length; i++) {
+      const data = contaData[i];
+
+      var newRow = '<tr id="Linha">' +
+          '<td>' + data.contaId + '</td>' +
+          '<td>' + data.cliente + '</td>' +
+          '<td>R$ ' + data.valorAPagar.toFixed(2) + '</td>';
+
+      const date = new Date(data.dataDeVencimento);
+      newRow += '<td>' + date.toLocaleDateString() + '</td>';
+
+      newRow += '<td>' + data.statusPagamento + '</td>' +
+          '<td>' + data.kilowattsHora + '</td>';
+
+      if (addBotao) {
+          newRow += '<td class="btn-col"><a href="#" onclick="javascript:changeCep(\'' + JSON.stringify(data) + '\');">Selecionar</a></td>';
+      }
+      newRow += '</tr>';
+
+      $("#table-body").prepend(newRow);
+  }
+
+  if (addBotao) {
+      $('#myModal').modal('hide');
+  }
+}
+
+getContaInfoByIDEndereco(sessionStorage.getItem('ID'), null, AdicionarLinhaTabelaContas);
+
+
 function getSelectedCurso(){
   return {
     "user_id": sessionGet('ID'),
@@ -290,7 +339,7 @@ function sessionGet(chave){
 function getUserInfoByEmail(email, callback){
   $.ajax({
       type: "GET",
-      url: "http://localhost:8080/api/aluno/encontre/" + email,
+      url: "http://localhost:8080/api/cliente/encontre/" + email,
       contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function (data) {
@@ -356,4 +405,23 @@ function getContaInfoByIDEndereco(id, statusPagamento = null, callback){
           console.error("Error loading3");
         },
     });
+}
+
+function togglePasswordVisibility() {
+  var passwordInput = document.getElementById("password");
+  var passwordToggle = document.querySelector(".c46ddf851 ulp-button-icon");
+
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    passwordToggle.querySelector(".show-password-tooltip").classList.add("hide");
+    passwordToggle.querySelector(".hide-password-tooltip").classList.remove("hide");
+    passwordToggle.querySelector(".password-toggle-label[data-label='show-password']").classList.add("hide");
+    passwordToggle.querySelector(".password-toggle-label[data-label='hide-password']").classList.remove("hide");
+  } else {
+    passwordInput.type = "password";
+    passwordToggle.querySelector(".show-password-tooltip").classList.remove("hide");
+    passwordToggle.querySelector(".hide-password-tooltip").classList.add("hide");
+    passwordToggle.querySelector(".password-toggle-label[data-label='show-password']").classList.remove("hide");
+    passwordToggle.querySelector(".password-toggle-label[data-label='hide-password']").classList.add("hide");
+  }
 }
