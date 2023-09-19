@@ -1,5 +1,11 @@
 let selectedCep = null;
 let SelectedCepId = null;
+const tamanho_maximo_do_cep = 5
+
+function ehUmCepValido(cep) {
+  const cepPattern = /^\d{5}-\d{3}$/;
+  return cepPattern.test(cep);
+}
 
 
 function getUserIDByEmail(email, callback){
@@ -22,12 +28,6 @@ function RegistrarEndereco() {
   let endereco = {}
   endereco.cep = $("#cep").val();
   endereco.numero = $("#numero").val();
-  const tamanho_maximo_do_cep = 5
-
-  function ehUmCepValido(cep) {
-    const cepPattern = /^\d{5}-\d{3}$/;
-    return cepPattern.test(cep);
-  }
   
   if (!ehUmCepValido(endereco.cep)) {
     alert("Formato de CEP Inválido!'.");
@@ -49,8 +49,8 @@ function RegistrarEndereco() {
       success: function (msg) {
        console.log("sucesso!")
       },
-      error: function (msg) {
-       console.log("um erro ocorreu no registro do endereço: " + msg)
+      error: function (errorThrown) {
+       console.error("um erro ocorreu no registro do endereço: " + errorThrown)
       }
  
     });

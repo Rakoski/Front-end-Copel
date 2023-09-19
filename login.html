@@ -320,30 +320,6 @@
                           <span class="c1f38a288 password js-required" aria-hidden="true"></span>
                         </button>
                       </div>
-
-                      <script>
-
-                        function togglePasswordVisibility() {
-                            var passwordInput = document.getElementById("password");
-                            var passwordToggle = document.querySelector(".c46ddf851 ulp-button-icon");
-
-                            if (passwordInput.type === "password") {
-                              passwordInput.type = "text";
-                              passwordToggle.querySelector(".show-password-tooltip").classList.add("hide");
-                              passwordToggle.querySelector(".hide-password-tooltip").classList.remove("hide");
-                              passwordToggle.querySelector(".password-toggle-label[data-label='show-password']").classList.add("hide");
-                              passwordToggle.querySelector(".password-toggle-label[data-label='hide-password']").classList.remove("hide");
-                            } else {
-                              passwordInput.type = "password";
-                              passwordToggle.querySelector(".show-password-tooltip").classList.remove("hide");
-                              passwordToggle.querySelector(".hide-password-tooltip").classList.add("hide");
-                              passwordToggle.querySelector(".password-toggle-label[data-label='show-password']").classList.remove("hide");
-                              passwordToggle.querySelector(".password-toggle-label[data-label='hide-password']").classList.add("hide");
-                            }
-                          }
-
-                      </script>
-                      </div>
                     </div>
                     
                 <div id="custom-field-1"></div>
